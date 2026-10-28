@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from epias import epias
+from visual_crossing import visual_crossing
 app = FastAPI(
     title="Epias",
     description="Epias API",
@@ -19,4 +20,10 @@ app.include_router(
     epias,
     prefix="/api/v1/epias",
     tags=["epias"]
+)
+
+app.include_router(
+    visual_crossing,
+    prefix="/api/v1/visual_crossing",
+    tags=["visual_crossing"]
 )
