@@ -1,0 +1,8 @@
+[project]
+name = "ges-tahmin"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162.0",
+    "requests>=2.34.2",
+]
