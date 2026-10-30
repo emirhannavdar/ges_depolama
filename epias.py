@@ -1,10 +1,11 @@
-from email import message
 from logging import NullHandler
+from typing import TypeVar, Generic, Optional
 
 import requests
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel, Field
 from config import EPIAS_BASE_URI
 from datetime import datetime, timezone, timedelta
 
@@ -14,7 +15,25 @@ TGT_TOKEN = None
 tz = timezone(timedelta(hours=3))
 
 def tarih_formatla(dt_obj):
-    return dt_obj.isoformat(timespec='seconds')
+    return dt_obj.isoformat(timespec="seconds")
+
+T = TypeVar("T")
+
+class RestApiEpias(BaseModel, Generic[T]):
+    success : bool
+    data: Optional[T] = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz))
+    errorCode: Optional[int] = None
+    message: Optional[str] = None
+
+    @classmethod
+    def ok(cls, data: T, message: Optional[str]):
+        return cls(success=True, data=data, message=message)
+
+    @classmethod
+    def error(cls, message: str, code: Optional[int] = None):
+        return cls(success=False, data=None, errorCode=code, message=message)
+
 
 class EpiasTGTToken(BaseModel):
     username: str
@@ -67,7 +86,12 @@ def post_PTF(startDate: str):
         "Accept": "application/json",
         "TGT": TGT_TOKEN
     }
-    tarih = datetime.now(tz)
+    tarih = datetime.now(tz).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
     body = {
         "startDate": startDate,
         "endDate": tarih_formatla(tarih)
@@ -99,9 +123,15 @@ def post_KPTF(onceki_gun = False):
         "Accept": "application/json",
         "TGT": TGT_TOKEN
     }
-    tarih = datetime.now(tz)
+    tarih = datetime.now(tz).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0
+    )
+
     if onceki_gun:
-        tarih = tarih - timedelta(days=1)
+        tarih -= timedelta(days=1)
 
     body = {
         "startDate": tarih_formatla(tarih)
@@ -123,16 +153,10 @@ async def tgt_token(raw: EpiasTGTToken):
     try:
         TGT_TOKEN = post_TGT_token(raw.username, raw.password)
 
-        return {
-            "success": True,
-            "Token": TGT_TOKEN,
-            "message": "Token başarıyla kaydedildi."
-        }
-    except requests.exceptions.RequestException:
-        raise HTTPException(
-            status_code=502,
-            detail="EPİAŞ token alınamadı."
-        )
+        return RestApiEpias.ok(data=TGT_TOKEN,message="basarılı")
+    except Exception as e:
+        error_res = RestApiEpias.error(f"Yanlıs parametre hatası: {str(e)}", 401)
+        raise HTTPException(status_code=401, detail=jsonable_encoder(error_res))
 
 #Burası kesinleşmemiş piyasa takas fiyaının alındığı yer /kpt
 @epias.post('/KPTF')
@@ -145,45 +169,39 @@ async def kptf():
             data = post_KPTF(onceki_gun=True)
             message = f"{tarih - timedelta(days=1)} tarihine ait eski veriler."
 
-        return {
-            "success": True,
-            "data": data,
-            "message": message
-        }
+        return RestApiEpias.ok(data=data,message=message)
 
     except HTTPException:
-        raise
+        error_res = RestApiEpias.error(
+            message="Önce TGT Token alınmalı",
+            code=401
+        )
+        raise HTTPException(status_code=401, detail=jsonable_encoder(error_res))
 
     except requests.exceptions.HTTPError as e:
-        raise HTTPException(
-            status_code=e.response.status_code,
-            detail=f"EPİAŞ API hatası: HTTP {e.response.status_code}"
+        error_res = RestApiEpias.error(
+            message=f"EPİAŞ API Hatası: {e.response.text}",
+            code=e.response.status_code
         )
-
-    except requests.exceptions.RequestException as e:
         raise HTTPException(
             status_code=502,
+            detail=jsonable_encoder(error_res)
+        )
+    except requests.exceptions.RequestException as e:
+        error_res = RestApiEpias.error(
+            message=f"EPİAŞ bağlantı hatası: {str(e)}",
+            code=502
+        )
+        raise HTTPException(
+            status_code=502,
+            detail=jsonable_encoder(error_res)
         )
 
 @epias.post('/PTF')
 async def ptf(raw: EpiasPTF):
     try:
         data = post_PTF(raw.startDate)
-        return {
-            "success": True,
-            "data": data,
-            "message": "basarılı"
-        }
-    except HTTPException:
-        raise
-
-    except requests.exceptions.HTTPError as e:
-        raise HTTPException(
-            status_code=e.response.status_code,
-            detail=f"EPİAŞ API hatası: HTTP {e.response.status_code}"
-        )
-
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(
-            status_code=502,
-        )
+        return RestApiEpias.ok(data=data,message=f"PTF: {raw.startDate}")
+    except Exception as e:
+        error_res = RestApiEpias.error(f"TGT Hatası: {str(e)}", 401)
+        raise HTTPException(status_code=401, detail=jsonable_encoder(error_res))
