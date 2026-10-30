@@ -40,6 +40,7 @@ class EpiasTGTToken(BaseModel):
 
 class EpiasPTF(BaseModel):
     startDate: str
+    endDate: str
 
 def post_TGT_token(username: str, password: str):
     url = "https://giris.epias.com.tr/cas/v1/tickets"
@@ -69,7 +70,7 @@ def post_TGT_token(username: str, password: str):
     return token
 
 
-def post_PTF(startDate: str):
+def post_PTF(startDate: str, endDate: str):
     if not TGT_TOKEN:
         raise HTTPException(
             status_code=401,
@@ -93,7 +94,7 @@ def post_PTF(startDate: str):
     )
     body = {
         "startDate": startDate,
-        "endDate": tarih_formatla(tarih)
+        "endDate": endDate
     }
 
     response = requests.post(
@@ -199,7 +200,7 @@ async def kptf():
 @epias.post('/PTF')
 async def ptf(raw: EpiasPTF):
     try:
-        data = post_PTF(raw.startDate)
+        data = post_PTF(raw.startDate, raw.endDate)
         return RestApiEpias.ok(data=data,message=f"PTF: {raw.startDate}")
     except Exception as e:
         error_res = RestApiEpias.error(f"TGT Hatası: {str(e)}", 401)

@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.epias import epias
 from api.visual_crossing import visual_crossing
-from forecast import router as forecast_router
+from api.forecast import router as forecast_router
+from api.pricing import router as pricing_router
 app = FastAPI(
     title="Epias",
     description="Epias API",
@@ -31,4 +32,8 @@ app.include_router(
 
 app.include_router(
     forecast_router
+)
+
+app.include_router(
+    pricing_router
 )
