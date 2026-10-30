@@ -1,10 +1,32 @@
+from datetime import datetime
+from typing import Generic, Optional, TypeVar
+
 import requests
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel, Field
 from config import VISUAL_CROSSING_API_KEY, VISUAL_CROSSING_BASE_URI
+from epias import tz
 
 visual_crossing = APIRouter()
+
+T = TypeVar("T")
+
+class RestApiWeather(BaseModel, Generic[T]):
+    success : bool
+    data: Optional[T] = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(tz))
+    errorCode: Optional[int] = None
+    message: Optional[str] = None
+
+    @classmethod
+    def ok(cls, data: T, message: Optional[str]):
+        return cls(success=True, data=data, message=message)
+
+    @classmethod
+    def error(cls, message: str, code: Optional[int] = None):
+        return cls(success=False, data=None, errorCode=code, message=message)
 
 class WeatherGet(BaseModel):
     enlem: int
@@ -19,7 +41,6 @@ def get_havadurumu(enlem: float, boylam: float):
         "key" : VISUAL_CROSSING_API_KEY,
         "contentType" : "json",
         "unitGroup": "metric",
-        "include": "days",
         "elements": "datetime,solarradiation,solarenergy",
         "lang": "tr",
     }
@@ -42,15 +63,8 @@ def weather(
     try:
         data = get_havadurumu(enlem, boylam)
 
-        return {
-            "success": True,
-            "latitude": enlem,
-            "longitude": boylam,
-            "data": data
-        }
+        return RestApiWeather.ok(data=data, message="Basarili")
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        error_res = RestApiWeather.error(str(e), 401)
+        raise HTTPException(status_code=401, detail=jsonable_encoder(error_res))
