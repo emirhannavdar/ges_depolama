@@ -4,6 +4,7 @@ from api.epias import epias
 from api.visual_crossing import visual_crossing
 from api.forecast import router as forecast_router
 from api.pricing import router as pricing_router
+from api.optimizer import router as optimizer_router
 app = FastAPI(
     title="Epias",
     description="Epias API",
@@ -37,3 +38,5 @@ app.include_router(
 app.include_router(
     pricing_router
 )
+
+app.include_router(optimizer_router)
