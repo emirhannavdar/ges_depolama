@@ -4,5 +4,9 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.162.0",
+    "forecast>=0.1.0",
+    "pandas-stubs~=3.1.0",
     "requests>=2.34.2",
+    "results>=2.0.1789346060",
+    "scipy-stubs~=1.18.1",
 ]
