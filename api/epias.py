@@ -123,6 +123,7 @@ def post_KPTF(onceki_gun = False):
         "Accept": "application/json",
         "TGT": TGT_TOKEN
     }
+
     tarih = datetime.now(tz).replace(
         hour=0,
         minute=0,

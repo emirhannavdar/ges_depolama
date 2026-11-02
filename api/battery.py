@@ -14,6 +14,9 @@ class BatteryConfig(BaseModel):
     charge_efficiency: float = Field(default=0.95, gt=0, le=1)
     discharge_efficiency: float = Field(default=0.95, gt=0, le=1)
 
+    max_charge_c: float | None = Field(default=None, gt = 0)
+    max_discharge_c: float | None = Field(default=None, gt = 0)
+
     @model_validator(mode="after")
     def validate_limits(self):
         if self.min_soc >= self.max_soc:

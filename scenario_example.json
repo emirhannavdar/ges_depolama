@@ -1,0 +1,18 @@
+{
+  "events": [
+    {
+      "name": "Bulut gecisi (sanal senaryo)",
+      "start": "2026-11-02T12:30:00+03:00",
+      "end": "2026-11-02T13:15:00+03:00",
+      "pv_factor": 0.55,
+      "load_factor": 1.0
+    },
+    {
+      "name": "Tesis yuku artisi (sanal senaryo)",
+      "start": "2026-11-02T18:00:00+03:00",
+      "end": "2026-11-02T19:00:00+03:00",
+      "pv_factor": 1.0,
+      "load_factor": 1.35
+    }
+  ]
+}

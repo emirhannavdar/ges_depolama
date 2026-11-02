@@ -5,6 +5,10 @@ from api.visual_crossing import visual_crossing
 from api.forecast import router as forecast_router
 from api.pricing import router as pricing_router
 from api.optimizer import router as optimizer_router
+from api.simulator_api import router as simulator_router
+from api.ems_bridge import router as ems_router
+from api.digital_twin import router as digital_twin_router
+
 app = FastAPI(
     title="Epias",
     description="Epias API",
@@ -39,4 +43,14 @@ app.include_router(
     pricing_router
 )
 
-app.include_router(optimizer_router)
+app.include_router(
+    optimizer_router
+)
+
+app.include_router(
+    simulator_router
+)
+
+app.include_router(ems_router)
+
+app.include_router(digital_twin_router)
