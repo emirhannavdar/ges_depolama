@@ -1,0 +1,36 @@
+{
+  "data_source": "Plan: supplied /optimize JSON, PTF unchanged; PV/load deviations: explicit synthetic test events",
+  "plan_hours": 24,
+  "plan_pv_generation_kwh": 42420.304,
+  "battery_input_validation": {
+    "effective_capacity_kwh": 100000.0,
+    "inferred_plan_effective_capacity_kwh": 100001.46367012667
+  },
+  "simulated_totals_kwh": {
+    "pv_generation_kwh": 39459.605,
+    "site_load_kwh": 12175.0,
+    "battery_charge_kwh": 15187.939,
+    "battery_discharge_kwh": 14207.115,
+    "grid_import_kwh": 7061.028,
+    "grid_export_kwh": 33364.809,
+    "curtailment_kwh": 0.0,
+    "unserved_load_kwh": 0.0
+  },
+  "baseline_without_battery_tl": 103972.56,
+  "simulated_with_battery_tl": 112994.02,
+  "simulated_incremental_battery_tl": 9021.46,
+  "simulated_sales_tl": 143151.95,
+  "simulated_purchases_tl": 23054.37,
+  "simulated_battery_degradation_tl": 7103.56,
+  "final_soc_pct": 49.47368,
+  "final_soc_target_pct": 50,
+  "events_applied": [
+    "Bulut gecisi (sanal senaryo)",
+    "Tesis yuku artisi (sanal senaryo)"
+  ],
+  "warning": "No intraday MILP re-optimization; economic results use PTF as reference, not contract settlement.",
+  "claimed_installed_kwp": 100000.0,
+  "plan_specific_yield_kwh_per_kwp": 0.4242,
+  "capacity_input_verified": false,
+  "capacity_warning": "The original forecast function may still read config.py. A yield check cannot prove which installed capacity was used. Log the effective capacity inside forecast.py."
+}
